@@ -1,0 +1,110 @@
+version: 2.1
+
+parameters:
+  llvm_version:
+    type: string
+    default: "14.0.6"
+
+constants:
+  - &path llvm-<< pipeline.parameters.llvm_version >>-<< parameters.arch >>-<< parameters.enable_assertions >>.tar.zst
+
+orbs: 
+  win: circleci/windows@4.1.1
+
+commands:
+  upload_file:
+    parameters:
+      file:
+        type: string
+    steps:
+      - run:
+          name: upload
+          command: aws s3 --endpoint https://fra1.digitaloceanspaces.com cp << parameters.file >> "s3://openva/<< parameters.file >>" --acl public-read
+
+  store_llvm_artifacts:
+    parameters:
+      enable_assertions:
+        type: string 
+      arch:
+        type: string
+    steps:
+      - run:
+          name: Create Tar Archive
+          command: tar -cf "${outfile}.raw" out
+
+      - run:
+          name: Compress Tar Archive
+          command: zstd -10 "${outfile}.raw" $outfile
+      - upload_file:
+          file: *path
+
+  checkout_llvm:
+    steps:
+      - run: 
+          name: Download LLVM Src
+          command: git clone --depth 1 --single-branch --branch llvmorg-<< pipeline.parameters.llvm_version >> https://github.com/llvm/llvm-project llvm
+
+jobs:
+  build_windows:
+    executor: 
+      name: win/server-2022
+      size: large
+    environment:
+      outfile: *path
+    
+    parameters:
+      enable_assertions:
+        type: string 
+      arch:
+        type: string
+        default: x86_64-pc-windows-msvc
+
+    steps:
+      - add_ssh_keys:
+          fingerprints: 
+            - 33:85:e8:4a:7a:af:eb:5f:b1:26:42:8e:a4:60:c2:12
+      - checkout
+      - run:
+          name: install dependencies
+          command: .\install_deps.ps1
+      - checkout_llvm
+      - run: 
+          name: Build LLVM
+          command: .\build.ps1 << parameters.enable_assertions >>
+      - store_llvm_artifacts:
+          arch: << parameters.arch >>
+          enable_assertions: << parameters.enable_assertions >>
+
+  create_release:
+    parameters:
+      tag:
+        type: string
+    docker:
+      - image: registry.gitlab.com/gitlab-org/release-cli:latest
+    steps:
+      - add_ssh_keys:
+          fingerprints: 
+            - 33:85:e8:4a:7a:af:eb:5f:b1:26:42:8e:a4:60:c2:12
+      - checkout
+      - run: |
+          release-cli \
+          --server-url https://gitlab.com \
+          --project-id 38184351 \
+          --private-token ${GITLAB_TOKEN} \
+          create \
+          --name "<< parameters.tag >>" \
+          --description "" \
+          --tag-name "<< parameters.tag >>" \
+          --tag-message "Tag << parameters.tag >>" \
+          --ref main \
+          --assets-link '{"name":"llvm-<< pipeline.parameters.llvm_version >>-msvc_x64-OFF.tar.zst","url":"https://fra1.digitaloceanspaces.com/openva/llvm-<< pipeline.parameters.llvm_version >>-msvc_x64-OFF.tar.zst","link_type":"package",  "filepath": "/binaries/llvm-<< pipeline.parameters.llvm_version >>-msvc_x64-OFF.tar.zst"}'
+
+workflows:
+  build:
+    jobs:
+      - build_windows:
+          enable_assertions: "OFF"
+      - create_release:
+          tag: "llvm-<< pipeline.parameters.llvm_version >>"
+          requires:
+            - build_windows
