@@ -1,0 +1,20 @@
+FROM registry.access.redhat.com/ubi7/ubi-minimal
+
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH=/usr/local/cargo/bin:$PATH \
+    RUST_VERSION=1.62.1 \
+    CC=clang \
+    CXX=clang++ \
+    AR=llvm-ar
+
+COPY ferris-ci /usr/bin/ferris-ci
+COPY containers/scripts/setup_dockerimage.sh containers/scripts/setup_python.sh /scripts/
+RUN set -e ; \
+    /scripts/setup_python.sh; \
+    /scripts/setup_dockerimage.sh; \
+    rm -rf /scripts; 
+
+COPY containers/scripts/entrypoint_ferris_ci.sh /usr/bin/entrypoint.sh
+ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
+LABEL com.circleci.preserve-entrypoint=true

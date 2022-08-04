@@ -1,110 +1,85 @@
 version: 2.1
-
-parameters:
-  llvm_version:
-    type: string
-    default: "14.0.6"
-
-constants:
-  - &path llvm-<< pipeline.parameters.llvm_version >>-<< parameters.arch >>-<< parameters.enable_assertions >>.tar.zst
-
-orbs: 
-  win: circleci/windows@4.1.1
-
-commands:
-  upload_file:
-    parameters:
-      file:
-        type: string
-    steps:
-      - run:
-          name: upload
-          command: aws s3 --endpoint https://fra1.digitaloceanspaces.com cp << parameters.file >> "s3://openva/<< parameters.file >>" --acl public-read
-
-  store_llvm_artifacts:
-    parameters:
-      enable_assertions:
-        type: string 
-      arch:
-        type: string
-    steps:
-      - run:
-          name: Create Tar Archive
-          command: tar -cf "${outfile}.raw" out
-
-      - run:
-          name: Compress Tar Archive
-          command: zstd -10 "${outfile}.raw" $outfile
-      - upload_file:
-          file: *path
-
-  checkout_llvm:
-    steps:
-      - run: 
-          name: Download LLVM Src
-          command: git clone --depth 1 --single-branch --branch llvmorg-<< pipeline.parameters.llvm_version >> https://github.com/llvm/llvm-project llvm
-
 jobs:
-  build_windows:
-    executor: 
-      name: win/server-2022
-      size: large
-    environment:
-      outfile: *path
-    
-    parameters:
-      enable_assertions:
-        type: string 
-      arch:
-        type: string
-        default: x86_64-pc-windows-msvc
-
+  build_bin:
+    docker:
+      - image: cimg/rust:1.62.0
+    resource_class: medium
     steps:
-      - add_ssh_keys:
-          fingerprints: 
-            - 33:85:e8:4a:7a:af:eb:5f:b1:26:42:8e:a4:60:c2:12
-      - checkout
+      - checkout # TODO shallow
       - run:
-          name: install dependencies
-          command: .\install_deps.ps1
-      - checkout_llvm
-      - run: 
-          name: Build LLVM
-          command: .\build.ps1 << parameters.enable_assertions >>
-      - store_llvm_artifacts:
-          arch: << parameters.arch >>
-          enable_assertions: << parameters.enable_assertions >>
-
-  create_release:
+          name: install dependencies (clang)
+          command: scripts/install_clang.sh && rustup target add x86_64-unknown-linux-musl
+      - restore_cache:
+          key: cargo-{{ checksum "Cargo.lock" }}
+      - run:
+          name: build ferris-ci
+          command: llvm_postfix=-14 scripts/build_ferris_ci.sh
+      - save_cache:
+          key: cargo-{{ checksum "Cargo.lock" }}
+          paths:
+            - ~/.cargo/registry
+            - ~/.cargo/git
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ferris-ci
+  build_image:
     parameters:
-      tag:
+      image:
+        type: string
+      target:
         type: string
     docker:
-      - image: registry.gitlab.com/gitlab-org/release-cli:latest
+      - image: cimg/base:stable
+    resource_class: small
     steps:
-      - add_ssh_keys:
-          fingerprints: 
-            - 33:85:e8:4a:7a:af:eb:5f:b1:26:42:8e:a4:60:c2:12
-      - checkout
-      - run: |
-          release-cli \
-          --server-url https://gitlab.com \
-          --project-id 38184351 \
-          --private-token ${GITLAB_TOKEN} \
-          create \
-          --name "<< parameters.tag >>" \
-          --description "" \
-          --tag-name "<< parameters.tag >>" \
-          --tag-message "Tag << parameters.tag >>" \
-          --ref main \
-          --assets-link '{"name":"llvm-<< pipeline.parameters.llvm_version >>-msvc_x64-OFF.tar.zst","url":"https://fra1.digitaloceanspaces.com/openva/llvm-<< pipeline.parameters.llvm_version >>-msvc_x64-OFF.tar.zst","link_type":"package",  "filepath": "/binaries/llvm-<< pipeline.parameters.llvm_version >>-msvc_x64-OFF.tar.zst"}'
-
+      - checkout # TODO shallow
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          key: cargo-{{ checksum "Cargo.lock" }}
+      - setup_remote_docker
+      - run:
+          name: build
+          command: |
+            docker pull registry.access.redhat.com/ubi7/ubi-minimal 
+            docker build --tag << parameters.image >>:latest -f containers/<< parameters.image >> .
+            docker tag ferris_ci:latest ghcr.io/pascalkuthe/<< parameters.image >>:latest
+      - run:
+          name: test
+          command: |
+            cd containers
+            tar -cvf image_test.tar image_test/
+            docker run -i << parameters.image >> bash -c 'tar -xvf - && cd image_test && cargo test --target << parameters.target >>' < image_test.tar
+      - when:
+          condition:
+            equal: [ staging, << pipeline.git.branch >> ]
+          name: deploy
+          steps:
+            - run: |
+                echo $GITHUB_TOKEN | docker login ghcr.io -u pascalkuthe --password-stdin
+                docker push ghcr.io/pascalkuthe/<< parameters.image >>
 workflows:
-  build:
+  ci:
+    when: 
+      or:
+        - equal: [ trying, << pipeline.git.branch >> ]
+        - equal: [ staging, << pipeline.git.branch >> ]
     jobs:
-      - build_windows:
-          enable_assertions: "OFF"
-      - create_release:
-          tag: "llvm-<< pipeline.parameters.llvm_version >>"
+      - build_bin:
+          name: build ferris_ci binary
+      - build_image:
+          name: build ferris_ci image
           requires:
-            - build_windows
+            - build ferris_ci binary
+          image: ferris_ci
+          target: x86_64-unknown-linux-gnu
+          context: github
+      - build_image:
+          name: build ferris_ci_win image
+          requires:
+            - build ferris_ci binary
+          image: ferris_ci_win
+          target: x86_64-pc-windows-msvc
+          context: github
+  

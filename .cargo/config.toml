@@ -1,0 +1,2 @@
+[alias]
+ferris-ci = "run --package ferris-ci --bin ferris-ci --"

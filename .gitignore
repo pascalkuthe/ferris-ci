@@ -1,0 +1,13 @@
+target
+Cargo.lock.norm
+containers/image_test.tar
+llvm_build
+llvm_src
+LLVM
+wine_build
+wine_src
+WINE
+git_src
+build_build
+GIT
+ferris-ci
