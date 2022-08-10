@@ -1,6 +1,6 @@
-use std::cmp::Ordering;
 use std::path::Path;
 
+use cargo_lock::Lockfile;
 use sha2::Digest;
 use xshell::{cmd, Shell};
 
@@ -8,34 +8,24 @@ use crate::flags::{Generate, Hash, Normalize, VendorCmd};
 
 pub fn normalize_lockfile(sh: &Shell) -> anyhow::Result<String> {
     let mut lock = Vec::new();
-    let lock_file = sh.read_file("Cargo.lock")?;
-    // Only hash the dependencies not the local crates
-    for package in lock_file.split("\n[[package]]") {
-        if !package.contains("source") {
-            continue;
+    let lock_file: Lockfile = sh.read_file("Cargo.lock")?.parse()?;
+    for package in lock_file.packages {
+        if let Some(source) = package.source {
+            lock.push((package.name, package.version, source.to_string()))
         }
-        let mut name = None;
-        let mut version = None;
-        for line in package.split('\n') {
-            if line.contains("name ") {
-                name = line.split('\"').nth(1)
-            }
-            if line.contains("version ") {
-                version = line.split('\"').nth(1)
-            }
-        }
-
-        let (name, version) = (name.unwrap(), version.unwrap());
-        lock.push((name, version))
     }
-    lock.sort_by(
-        |(name1, version1), (name2, version2)| match name1.cmp(name2) {
-            Ordering::Equal => version1.cmp(version2),
-            res => res,
-        },
-    );
+
+    lock.sort_by(|(name1, version1, src1), (name2, version2, src2)| {
+        name1
+            .cmp(name2)
+            .then_with(|| version1.cmp(version2))
+            .then_with(|| src1.cmp(src2))
+    });
     lock.dedup();
-    let res = format!("{lock:#?}");
+    let res = lock
+        .into_iter()
+        .map(|(name, version, src)| format!("{name}={version}[{src}]\n"))
+        .collect();
     Ok(res)
 }
 impl Normalize {
