@@ -44,7 +44,7 @@ jobs:
           command: |
             docker pull registry.access.redhat.com/ubi7/ubi-minimal 
             docker build --tag << parameters.image >>:latest -f containers/<< parameters.image >> .
-            docker tag << parameters.image >>:latest ghcr.io/pascalkuthe/<< parameters.image >>:latest
+            docker tag << parameters.image >>:latest ghcr.io/pascalkuthe/ferris_ci_<< parameters.target >>:latest
       - run:
           name: test
           command: |
@@ -58,7 +58,7 @@ jobs:
           steps:
             - run: |
                 echo $GITHUB_TOKEN | docker login ghcr.io -u pascalkuthe --password-stdin
-                docker push ghcr.io/pascalkuthe/<< parameters.image >>
+                docker push ghcr.io/pascalkuthe/ferris_ci_<< parameters.target >>
 workflows:
   ci:
     when: 
