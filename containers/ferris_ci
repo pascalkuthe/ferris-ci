@@ -15,6 +15,5 @@ RUN set -e ; \
     /scripts/setup_dockerimage.sh; \
     rm -rf /scripts; 
 
-COPY containers/scripts/entrypoint_ferris_ci.sh /usr/bin/entrypoint.sh
-ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
-LABEL com.circleci.preserve-entrypoint=true
+ENV PATH=/opt/rh/rh-python38/root/usr/local/bin:/opt/rh/rh-python38/root/usr/bin:$PATH \
+    LD_LIBRARY_PATH=/opt/rh/rh-python38/root/usr/lib64:$LD_LIBRARY_PATH
