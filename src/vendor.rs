@@ -60,7 +60,7 @@ impl Generate {
         if !sh.path_exists("vendor") {
             cmd!(sh, "cargo vendor").run()?;
         }
-        let path = Path::new(".cargo").join("vendor");
+        let path = Path::new(".cargo").join("config.toml");
         let mut vendor = if sh.current_dir().join(&path).exists() {
             sh.read_file(&path)?
         } else {
