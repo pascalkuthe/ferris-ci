@@ -30,7 +30,7 @@ lto = true
 opt-level="z"
 panic = "abort"
 debug = false
-strip = false 
+strip = true 
 codegen-units=1
 
 [profile.release.package]
