@@ -59,7 +59,7 @@ jobs:
                 docker push ghcr.io/pascalkuthe/ferris_ci_<< parameters.target >>
   build_tools_image:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:current-22.04
     resource_class: small
     steps:
       - checkout # TODO shallow
