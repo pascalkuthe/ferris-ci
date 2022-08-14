@@ -36,8 +36,6 @@ jobs:
       - checkout # TODO shallow
       - attach_workspace:
           at: .
-      - restore_cache:
-          key: cargo-{{ checksum "Cargo.lock" }}
       - setup_remote_docker
       - run:
           name: build
@@ -59,6 +57,28 @@ jobs:
             - run: |
                 echo $GITHUB_TOKEN | docker login ghcr.io -u pascalkuthe --password-stdin
                 docker push ghcr.io/pascalkuthe/ferris_ci_<< parameters.target >>
+  build_tools_image:
+    docker:
+      - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - checkout # TODO shallow
+      - attach_workspace:
+          at: .
+      - setup_remote_docker
+      - run:
+          name: build
+          command: |
+            docker build --tag ferris_ci_tools:latest -f containers/ferris_ci_tools .
+            docker tag ferris_ci_tools:latest ghcr.io/pascalkuthe/ferris_ci_tools:latest
+      - when:
+          condition:
+            equal: [ staging, << pipeline.git.branch >> ]
+          name: deploy
+          steps:
+            - run: |
+                echo $GITHUB_TOKEN | docker login ghcr.io -u pascalkuthe --password-stdin
+                docker push ghcr.io/pascalkuthe/ferris_ci_tools
 workflows:
   ci:
     when: 
@@ -81,5 +101,10 @@ workflows:
             - build ferris_ci binary
           image: ferris_ci_win
           target: x86_64-pc-windows-msvc
+          context: github
+      - build_tools_image:
+          name: build ferris_ci_tools image
+          requires:
+            - build ferris_ci binary
           context: github
   
