@@ -19,11 +19,7 @@ impl Build {
     }
 
     fn configure_wine(&self, sh: &Shell) -> anyhow::Result<()> {
-        let configure = sh
-            .current_dir()
-            .parent()
-            .unwrap()
-            .join("configure");
+        let configure = sh.current_dir().parent().unwrap().join("configure");
 
         let install_dir = sh
             .current_dir()

@@ -1,4 +1,4 @@
-use crate::{KnownProgram, ArchiveFormat};
+use crate::{ArchiveFormat, KnownProgram};
 use std::path::PathBuf;
 
 xflags::xflags! {
@@ -74,7 +74,7 @@ xflags::xflags! {
             cmd normalize{}
             cmd generate{}
         }
-     
+
     }
 
 }

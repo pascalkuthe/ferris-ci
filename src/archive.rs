@@ -6,7 +6,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 use xshell::Shell;
 use zstd::Encoder;
 
-use crate::{flags, llvm, wine, KnownProgram, git};
+use crate::{flags, git, llvm, wine, KnownProgram};
 
 impl flags::Archive {
     pub fn run(self, sh: &Shell) -> anyhow::Result<()> {
