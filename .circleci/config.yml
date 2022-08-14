@@ -65,7 +65,8 @@ jobs:
       - checkout # TODO shallow
       - attach_workspace:
           at: .
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.14
       - run:
           name: build
           command: |
