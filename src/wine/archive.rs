@@ -38,10 +38,10 @@ pub fn populate_archive(
     add_executable("wineserver")?;
     add_executable("regsvr32")?;
 
-    pb.set_length(241*1024*1014);
+    pb.set_length(241 * 1024 * 1014);
     tar_builder.append_dir_all("WINE/lib64", &llvm_dir.join("lib"))?;
 
-    pb.set_length(11*1024*1014);
+    pb.set_length(11 * 1024 * 1014);
     tar_builder.append_dir("WINE/share", &llvm_dir.join("share"))?;
     tar_builder.append_dir_all("WINE/share/wine", &llvm_dir.join("share").join("wine"))?;
 

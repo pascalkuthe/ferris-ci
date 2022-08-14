@@ -23,4 +23,5 @@ function build_image(){
 }
 
 build_image ferris_ci
+build_image ferris_ci_tools
 build_image ferris_ci_win

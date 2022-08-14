@@ -62,16 +62,6 @@ mv /LLVM/lib64/* /usr/lib64/
 mv /LLVM/include/* /usr/include/
 rm -rf /LLVM
 
-# Install minimal git version
-VERSION=2.37.1
-ferris-ci download "git-${VERSION}-x86_64-unknown-linux-gnu-OFF.tar.zst" --decompress
-chmod +x /GIT/bin/*
-mv /GIT/bin/* /usr/bin/
-chmod +x /GIT/libexec/git-core/*
-mkdir -p /usr/libexec/git-core/
-mv /GIT/libexec/git-core/* /usr/libexec/git-core/
-rm -rf /GIT
-
 
 # Install Rust
 ferris-ci install-rust "${RUST_VERSION}"
@@ -91,11 +81,6 @@ ferris-ci install-tool cargo-nextest $URL
 VERSION="0.2.2"
 URL="https://openva.fra1.cdn.digitaloceanspaces.com/circleci-junit-fix-0.2.2.tar.gz"
 ferris-ci install-tool circleci-junit-fix $URL
-
-# Install cargo-machete
-VERSION="0.3.1"
-URL="https://openva.fra1.cdn.digitaloceanspaces.com/cargo-machete-${VERSION}.tar.gz"
-ferris-ci install-tool cargo-machete $URL
 
 # Install cargo-llvm-cov
 VERSION="0.4.14"
