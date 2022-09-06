@@ -21,6 +21,7 @@ impl Build {
                 env_access_key: self.env_access_key,
                 src_dir: None,
                 debug: self.debug,
+                full: true,
             }
             .run(sh)?;
         }

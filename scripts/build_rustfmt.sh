@@ -25,17 +25,17 @@ VERSION="1.5.1"
 BRANCH="v${VERSION}"
 URL=https://github.com/rust-lang/rustfmt.git
 
-# git clone --depth 1 --single-branch --branch "${BRANCH}" "${URL}" "${build_dir}"
+git clone --depth 1 --single-branch --branch "${BRANCH}" "${URL}" "${build_dir}"
 
-# $docker run -v "$(pwd):/io:Z" --entrypoint /bin/bash rust:slim -c "
-# cd /io/${build_dir} && \
-# CARGO_PROFILE_RELEASE_OPT_LEVEL=z \
-# CARGO_PROFILE_RELEASE_PANIC=abort \
-# CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1 \
-# RUSTC_FLAGS=\"-C strip\" \
-# cargo build --release --bin rustfmt --no-default-features"
+$docker run -v "$(pwd):/io:Z" --entrypoint /bin/bash rust:slim -c "
+cd /io/${build_dir} && \
+CARGO_PROFILE_RELEASE_OPT_LEVEL=z \
+CARGO_PROFILE_RELEASE_PANIC=abort \
+CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1 \
+RUSTC_FLAGS=\"-C strip\" \
+cargo build --release --bin rustfmt --no-default-features"
 
-# mv $build_dir/target/release/rustfmt ./rustfmt
+mv $build_dir/target/release/rustfmt ./rustfmt
 rm -rf $build_dir
 ./ferris-ci upload -z tar-gz -o "rustfmt-${VERSION}.tar.gz" ./rustfmt
 rm rustfmt

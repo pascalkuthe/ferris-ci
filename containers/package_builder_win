@@ -1,0 +1,39 @@
+FROM ubuntu:22.04
+
+WORKDIR /tmp
+RUN apt-get update && apt-get install -y --no-install-recommends \
+		ca-certificates \
+		gpg \
+		gpg-agent \
+		git \
+		cmake \
+		ninja-build \
+        software-properties-common
+COPY ./llvm-snapshot.gpg.key /tmp/
+RUN set -ex; \
+    llvm_version=14; \
+    apt-key add llvm-snapshot.gpg.key; \
+    add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$llvm_version main"; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends clang-$llvm_version llvm-$llvm_version lld-$llvm_version
+
+ENV CC=clang-14 \
+    CXX=clang-14 \
+    AR=llvm-ar-14
+
+COPY ferris-ci /usr/bin/ferris-ci
+RUN set -e \
+    xwin_version="0.2.5" \
+    xwin_prefix="xwin-$xwin_version-x86_64-unknown-linux-musl"; \
+    xwin_version="0.2.5" \
+    xwin_prefix="xwin-$xwin_version-x86_64-unknown-linux-musl"; \
+    ferris-ci install-tool xwin https://github.com/Jake-Shadle/xwin/releases/download/$xwin_version/$xwin_prefix.tar.gz; \
+    xwin --accept-license splat --output /xwin; \
+    rm -rf .xwin-cache /bin/xwin
+
+ENV CL_FLAGS="-Wno-unused-command-line-argument -fuse-ld=lld-link /imsvc/xwin/crt/include /imsvc/xwin/sdk/include/ucrt /imsvc/xwin/sdk/include/um /imsvc/xwin/sdk/include/shared /imsvc/usr/include" \
+    CLD_FLAGS="/libpath:/xwin/crt/lib/x86_64 /libpath:/xwin/sdk/lib/um/x86_64 /libpath:/xwin/sdk/lib/ucrt/x86_64"
+RUN ln -s clang-14 /usr/bin/clang-cl
+COPY ferris-ci /usr/bin/ferris-ci
+COPY containers/scripts/entrypoint_packge_builder.sh /usr/bin/entrypoint.sh
+ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]

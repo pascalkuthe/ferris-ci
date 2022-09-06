@@ -22,6 +22,15 @@ function build_image(){
     $docker build --tag "${1}:latest" -f "containers/${1}" .
 }
 
-build_image ferris_ci
-build_image ferris_ci_tools
-build_image ferris_ci_win
+function build_squashed_image(){
+    $docker build --tag "${1}:latest" --squash-all -f "containers/${1}" .
+}
+
+# build_squashed_image ferris_ci_build
+# build_squashed_image ferris_ci_build_win --squash
+# build_image ferris_ci_clippy
+# build_image ferris_ci_dep
+# build_image ferris_ci_fmt
+# build_image ferris_ci_test_runner
+build_image ferris_ci_test_runner_win
+# build_image ferris_ci_vendor

@@ -1,19 +1,19 @@
-FROM registry.access.redhat.com/ubi7/ubi-minimal
+FROM centos:centos7
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
     PATH=/usr/local/cargo/bin:$PATH \
-    RUST_VERSION=1.62.1 \
+    RUST_VERSION=1.63.0 \
     CC=clang \
     CXX=clang++ \
     AR=llvm-ar
 
 COPY ferris-ci /usr/bin/ferris-ci
-COPY containers/scripts/setup_dockerimage.sh containers/scripts/setup_python.sh /scripts/
+COPY containers/scripts/setup_builder.sh containers/scripts/setup_python.sh /scripts/
 RUN set -e ; \
     /scripts/setup_python.sh; \
-    /scripts/setup_dockerimage.sh; \
+    /scripts/setup_builder.sh; \
     rm -rf /scripts; 
 
 ENV PATH=/opt/rh/rh-python38/root/usr/local/bin:/opt/rh/rh-python38/root/usr/bin:$PATH \
-    LD_LIBRARY_PATH=/opt/rh/rh-python38/root/usr/lib64:$LD_LIBRARY_PATH
+    LD_LIBRARY_PATH=/opt/rh/rh-python38/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib:$LD_LIBRARY_PATH

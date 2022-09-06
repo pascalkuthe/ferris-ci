@@ -1,0 +1,7 @@
+FROM ubuntu:22.04
+
+COPY ferris-ci /usr/bin/ferris-ci
+COPY containers/scripts/setup_vendor.sh /scripts/
+RUN set -e ; \
+    /scripts/setup_vendor.sh; \
+    rm -rf /scripts; 

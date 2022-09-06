@@ -7,7 +7,8 @@ apt-get install -y --no-install-recommends \
 		ca-certificates \
 		gzip \
 		openssh-client \
-		tar 
+		tar  \
+		curl
 rm -rf /var/lib/apt/lists/*
 
 
@@ -21,12 +22,8 @@ mkdir -p /usr/libexec/git-core/
 mv /GIT/libexec/git-core/* /usr/libexec/git-core/
 rm -rf /GIT
 
-# Install cargo-machete
-VERSION="0.3.1"
-URL="https://openva.fra1.cdn.digitaloceanspaces.com/cargo-machete-${VERSION}.tar.gz"
-ferris-ci install-tool cargo-machete $URL
+# install cargo/rustc/clippy
+ferris-ci install-rust "${RUST_VERSION}"
+rustup component add clippy
 
-# Install rustfmt
-VERSION="1.5.1"
-URL="https://openva.fra1.cdn.digitaloceanspaces.com/rustfmt-${VERSION}.tar.gz"
-ferris-ci install-tool rustfmt $URL
+rm /usr/bin/ferris-ci

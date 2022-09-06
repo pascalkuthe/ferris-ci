@@ -2,7 +2,7 @@ FROM centos:centos7
 
 RUN yum install centos-release-scl epel-release -y
 RUN yum install -y  scl-utils scl-utils-build
-RUN yum install llvm-toolset-7.0 devtoolset-9 -y
+RUN yum install devtoolset-9 -y
 RUN yum install git-core ninja-build  libffi-devel cmake3 make automake flex bison libcurl-devel zlib-devel openssl-devel -y
 
 COPY ferris-ci /usr/bin/ferris-ci

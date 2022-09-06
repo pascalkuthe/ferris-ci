@@ -54,29 +54,32 @@ impl Build {
                 -DLLVM_PARALLEL_LINK_JOBS=1
                 -DLLVM_TARGETS_TO_BUILD=AArch64;ARM;X86
                 -DLLVM_OPTIMIZED_TABLEGEN=ON
-                -DLLVM_ENABLE_LLD=ON
                 -DCMAKE_BUILD_TYPE=Release
                 -DLLVM_ENABLE_LIBXML2=OFF
                 -DLLVM_ENABLE_ZLIB=OFF
                 -DLLVM_ENABLE_ASSERTIONS={enable_assert}
                 -DLLVM_BUILD_TOOLS=OFF
+                -DLLVM_BUILD_EXAMPLES=OFF
+                -DLLVM_BUILD_TOOLS=OFF
+                -DLLVM_BUILD_RUNTIME=OFF
                 -DLLVM_ENABLE_BINDINGS=OFF
                 -DLLVM_INSTALL_UTILS=OFF
-                -DLLVM_LIBDIR_SUFFIX=64"
+                -DLLVM_LIBDIR_SUFFIX=64
+                -DLLVM_ENABLE_PROJECTS=clang;lld
+                -DCLANG_ENABLE_ARCMT=OFF
+                -DCLANG_ENABLE_STATIC_ANALYZER=OFF
+                -DLLVM_BUILD_LLVM_C_DYLIB=OFF"
         );
 
         let cmd = if cfg!(unix) {
-            cmd.args([
-                "-DLLVM_ENABLE_PROJECTS=clang;lld",
-                "-DCLANG_ENABLE_ARCMT=OFF",
-                "-DCLANG_ENABLE_STATIC_ANALYZER=OFF",
-            ])
+            cmd.args(["-DLLVM_ENABLE_LLD=ON"])
         } else {
             cmd.args([
                 "-DCMAKE_C_COMPILER:PATH=clang-cl.exe",
                 "-DCMAKE_CXX_COMPILER:PATH=clang-cl.exe",
                 "-DCMAKE_RC_COMPILER:PATH=llvm-rc.exe",
                 "-DCMAKE_LINKER:PATH=lld-link.exe",
+                "-DLLVM_ENABLE_DIA_SDK=OFF",
             ])
         };
 
@@ -123,12 +126,12 @@ impl Build {
         )?;
 
         for dir in ["Config", "IR", "Support"] {
-            let dst = dst.join(dir).join("llvm");
-            let dir = tmp.join(dir).join("llvm");
+            let dst = dst.join("llvm").join(dir);
+            let dir = tmp.join("llvm").join(dir);
             for file in fs::read_dir(dir)? {
                 let file = file?;
                 if let Some(name) = file.file_name().to_str() {
-                    if name.ends_with(".h") {
+                    if name.ends_with(".h") || name.ends_with(".inc") {
                         fs::rename(file.path(), dst.join(file.file_name()))?;
                     }
                 }

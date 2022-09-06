@@ -10,7 +10,9 @@ use crate::{flags, git, llvm, wine, KnownProgram};
 
 impl flags::Archive {
     pub fn run(self, sh: &Shell) -> anyhow::Result<()> {
-        let out_file = self.program.archive_name(&self.version, self.debug);
+        let out_file = self
+            .program
+            .archive_name(&self.version, self.debug, self.full);
         if !self.upload {
             let mut dst = File::create(sh.current_dir().join(&out_file))?;
             self.run_with_dst(sh, &mut dst)?;
@@ -59,7 +61,7 @@ impl flags::Archive {
         pb: &ProgressBar,
     ) -> anyhow::Result<()> {
         match self.program {
-            KnownProgram::LLVM => llvm::populate_archive(&self.src_dir, sh, dst, pb),
+            KnownProgram::LLVM => llvm::populate_archive(&self.src_dir, sh, dst, pb, self.full),
             KnownProgram::Wine => wine::populate_archive(&self.src_dir, sh, dst, pb),
             KnownProgram::Git => git::populate_archive(&self.src_dir, sh, dst, pb),
         }

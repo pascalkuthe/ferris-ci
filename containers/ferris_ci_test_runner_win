@@ -1,0 +1,10 @@
+FROM ubuntu:22.04
+
+COPY ferris-ci /usr/bin/ferris-ci
+COPY containers/scripts/setup_test_runner.sh containers/scripts/setup_test_runner_win.sh /scripts/
+ENV WINEDEBUG="-all" \
+    CARGO_TARGET_X86_64_PC_WINDOWS_MSVC_RUNNER="wine64" 
+RUN set -e ; \
+    /scripts/setup_test_runner_win.sh; \
+    /scripts/setup_test_runner.sh; \
+    rm -rf /scripts; 

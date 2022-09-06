@@ -37,7 +37,6 @@ fn main() -> anyhow::Result<()> {
         flags::FerrisCiCmd::Build(cmd) => cmd.run(sh),
         flags::FerrisCiCmd::Archive(cmd) => cmd.run(sh),
         flags::FerrisCiCmd::Download(cmd) => cmd.run(sh),
-        flags::FerrisCiCmd::InstallLlvmBuildDeps(_) => todo!(),
         flags::FerrisCiCmd::Release(_) => todo!(),
         flags::FerrisCiCmd::Vendor(cmd) => cmd.subcommand.run(sh),
     }
@@ -142,22 +141,27 @@ impl KnownProgram {
             KnownProgram::Git => "git",
         }
     }
-    pub fn archive_name(self, version: &str, debug: bool) -> String {
-        self.archive_name_with_target(version, debug, None)
+    pub fn archive_name(self, version: &str, debug: bool, full: bool) -> String {
+        self.archive_name_with_target(version, debug, full, None)
     }
     pub fn archive_name_with_target(
         self,
         version: &str,
         debug: bool,
+        full: bool,
         target: Option<&str>,
     ) -> String {
-        let postfix = match debug {
-            true => "ON",
-            false => "OFF",
-        };
         let name = self.name();
         let target = target.unwrap_or(TARGET);
-        format!("{name}-{version}-{target}-{postfix}.tar.zst")
+        let mut res = format!("{name}-{version}-{target}");
+        if full {
+            res.push_str("-FULL");
+        }
+        if debug {
+            res.push_str("-DEBUG");
+        }
+        res.push_str(".tar.zst");
+        res
     }
 
     pub fn build_dir(self) -> String {

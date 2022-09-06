@@ -1,0 +1,7 @@
+FROM alpine:3.16
+
+COPY ferris-ci /usr/bin/ferris-ci
+COPY containers/scripts/setup_dep.sh /scripts/
+RUN set -e ; \
+    /scripts/setup_dep.sh; \
+    rm -rf /scripts; 

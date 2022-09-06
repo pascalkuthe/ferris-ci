@@ -37,8 +37,6 @@ impl flags::InstallRust {
             cmd!(sh, "chmod -R a+w {rustup_home} {cargo_home}").run()?;
         }
 
-        cmd!(sh, "rustup component add rustfmt").run()?;
-        cmd!(sh, "rustup component add clippy").run()?;
         Ok(())
     }
 }

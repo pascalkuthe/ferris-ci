@@ -40,7 +40,6 @@ jobs:
       - run:
           name: build
           command: |
-            docker pull registry.access.redhat.com/ubi7/ubi-minimal 
             docker build --tag << parameters.image >>:latest -f containers/<< parameters.image >> .
             docker tag << parameters.image >>:latest ghcr.io/pascalkuthe/ferris_ci_<< parameters.target >>:latest
       - run:

@@ -1,0 +1,7 @@
+FROM ubuntu:22.04
+
+COPY ferris-ci /usr/bin/ferris-ci
+COPY containers/scripts/setup_test_runner.sh /scripts/
+RUN set -e ; \
+    /scripts/setup_test_runner.sh; \
+    rm -rf /scripts; 

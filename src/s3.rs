@@ -109,7 +109,7 @@ pub fn upload(data: &[u8], object: &str, env_credentials: bool) -> anyhow::Resul
     } else {
         MultiPartUpload::new(data, object, bucket, credentials, CHUNK_SIZE)?.run()?;
     }
-    println!("upload complete");
+    println!("uploading {object} complete");
 
     Ok(())
 }
