@@ -5,6 +5,7 @@ set -e
 apt-get update
 apt-get install -y --no-install-recommends \
 		ca-certificates \
+		libssl3 \
 		gzip \
 		tar  \
 		curl
