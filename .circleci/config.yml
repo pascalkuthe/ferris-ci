@@ -27,10 +27,39 @@ jobs:
     parameters:
       image:
         type: string
-      target:
-        type: string
     docker:
       - image: cimg/base:stable
+    resource_class: small
+    steps:
+      - checkout # TODO shallow
+      - attach_workspace:
+          at: .
+      - setup_remote_docker
+      - run: |
+          ssh remote-docker \<< EOF
+            sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
+            sudo systemctl restart docker
+          EOF
+      - run:
+          name: build
+          command: |
+            docker build --tag ghcr.io/pascalkuthe/<< parameters.image >> -f containers/<< parameters.image >> --squash .
+
+      - when:
+          condition:
+              equal: [ staging, << pipeline.git.branch >> ]
+          steps:
+            - run:
+                name: deploy
+                command: |
+                  echo $GITHUB_TOKEN | docker login ghcr.io -u pascalkuthe --password-stdin
+                  docker push ghcr.io/pascalkuthe/<< parameters.image >>
+  build_squashed_image:
+    parameters:
+      image:
+        type: string
+    docker:
+      - image: cimg/python:3.10
     resource_class: small
     steps:
       - checkout # TODO shallow
@@ -40,45 +69,24 @@ jobs:
       - run:
           name: build
           command: |
-            docker build --tag << parameters.image >>:latest -f containers/<< parameters.image >> .
-            docker tag << parameters.image >>:latest ghcr.io/pascalkuthe/ferris_ci_<< parameters.target >>:latest
+            docker build --tag ghcr.io/pascalkuthe/<< parameters.image >> -f containers/<< parameters.image >> .
+
       - run:
-          name: test
+          name: squash
           command: |
-            cd containers
-            tar -cvf image_test.tar image_test/
-            docker run -i << parameters.image >> bash -c 'tar -xvf - && cd image_test && cargo test --target << parameters.target >>' < image_test.tar
+            pip install docker==5.0.3
+            pip install docker-squash
+            docker-squash ghcr.io/pascalkuthe/<< parameters.image >>
       - when:
           condition:
-            equal: [ staging, << pipeline.git.branch >> ]
-          name: deploy
+              equal: [ staging, << pipeline.git.branch >> ]
           steps:
-            - run: |
-                echo $GITHUB_TOKEN | docker login ghcr.io -u pascalkuthe --password-stdin
-                docker push ghcr.io/pascalkuthe/ferris_ci_<< parameters.target >>
-  build_tools_image:
-    docker:
-      - image: cimg/base:current-22.04
-    resource_class: small
-    steps:
-      - checkout # TODO shallow
-      - attach_workspace:
-          at: .
-      - setup_remote_docker:
-          version: 20.10.14
-      - run:
-          name: build
-          command: |
-            docker build --tag ferris_ci_tools:latest -f containers/ferris_ci_tools .
-            docker tag ferris_ci_tools:latest ghcr.io/pascalkuthe/ferris_ci_tools:latest
-      - when:
-          condition:
-            equal: [ staging, << pipeline.git.branch >> ]
-          name: deploy
-          steps:
-            - run: |
-                echo $GITHUB_TOKEN | docker login ghcr.io -u pascalkuthe --password-stdin
-                docker push ghcr.io/pascalkuthe/ferris_ci_tools
+            - run:
+                name: deploy
+                command: |
+                  echo $GITHUB_TOKEN | docker login ghcr.io -u pascalkuthe --password-stdin
+                  docker push ghcr.io/pascalkuthe/<< parameters.image >>
+
 workflows:
   ci:
     when: 
@@ -88,23 +96,27 @@ workflows:
     jobs:
       - build_bin:
           name: build ferris_ci binary
+
       - build_image:
-          name: build ferris_ci image
-          requires:
-            - build ferris_ci binary
-          image: ferris_ci
-          target: x86_64-unknown-linux-gnu
-          context: github
-      - build_image:
-          name: build ferris_ci_win image
-          requires:
-            - build ferris_ci binary
-          image: ferris_ci_win
-          target: x86_64-pc-windows-msvc
-          context: github
-      - build_tools_image:
-          name: build ferris_ci_tools image
           requires:
             - build ferris_ci binary
           context: github
-  
+          matrix:
+            parameters:
+              image: 
+              - ferris_ci_clippy
+              - ferris_ci_fmt
+              - ferris_ci_dep
+              - ferris_ci_vendor
+              - ferris_ci_test_runner_x86_64-pc-windows-msvc
+              - ferris_ci_test_runner_x86_64-unknown-linux-gnu 
+
+      - build_squashed_image:
+          requires:
+            - build ferris_ci binary
+          context: github
+          matrix:
+            parameters:
+              image: 
+              - ferris_ci_build_x86_64-pc-windows-msvc
+              - ferris_ci_build_x86_64-unknown-linux-gnu 
