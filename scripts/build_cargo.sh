@@ -21,21 +21,19 @@ fi
 
 
 build_dir="cargo_src"
-VERSION="0.64.0"
-BRANCH="${VERSION}"
+VERSION="1.64.0"
+BRANCH="rust-${VERSION}"
 URL=https://github.com/rust-lang/cargo.git
 
 git clone --depth 1 --single-branch --branch "${BRANCH}" "${URL}" "${build_dir}"
 
 $docker run -v "$(pwd):/io:Z" --entrypoint /bin/bash rust -c "
-apt-get update && \
-apt-get install libssl-dev && \
 cd /io/${build_dir} && \
 CARGO_PROFILE_RELEASE_OPT_LEVEL=z \
 CARGO_PROFILE_RELEASE_PANIC=abort \
 CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1 \
 RUSTC_FLAGS=\"-C strip\" \
-cargo build --release --bin cargo"
+cargo build --release --bin cargo --features=vendored-openssl"
 
 mv $build_dir/target/release/cargo ./cargo
 rm -rf $build_dir
