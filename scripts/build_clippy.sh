@@ -21,7 +21,7 @@ fi
 
 
 build_dir="clippy_src"
-VERSION="1.63.0"
+VERSION="1.64.0"
 BRANCH="rust-${VERSION}"
 URL=https://github.com/rust-lang/rust-clippy.git
 

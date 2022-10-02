@@ -6,7 +6,6 @@ apt-get update
 apt-get install -y --no-install-recommends \
 		ca-certificates \
 		gzip \
-		openssh-client \
 		tar  \
 		curl
 rm -rf /var/lib/apt/lists/*
@@ -23,6 +22,6 @@ mv /GIT/libexec/git-core/* /usr/libexec/git-core/
 rm -rf /GIT
 
 # Install cargo
-VERSION="0.64.0"
+VERSION="1.64.0"
 URL="https://openva.fra1.cdn.digitaloceanspaces.com/cargo-${VERSION}.tar.gz"
 ferris-ci install-tool cargo $URL
