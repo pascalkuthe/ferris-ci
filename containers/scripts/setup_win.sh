@@ -10,12 +10,13 @@ ln -s /usr/lib64/wine /usr/lib/wine
 ln -s /usr/lib64/LLVM* /usr/lib/
 mv WINE/share/* /usr/share/
 rm -rf WINE
+wine64 wineboot --init
 
 # install msvc crt
-xwin_version="0.2.5"
-xwin_prefix="xwin-$xwin_version-x86_64-unknown-linux-musl"
-ferris-ci install-tool xwin https://github.com/Jake-Shadle/xwin/releases/download/$xwin_version/$xwin_prefix.tar.gz
-xwin --accept-license splat --output /xwin
+VERSION=0.2.27-dev
+URL="https://openva.fra1.cdn.digitaloceanspaces.com/cargo-xwin-${VERSION}.tar.gz"
+ferris-ci install-tool xwin $URL
+xwin --accept-license --manifest-version=17 splat  --output /xwin
 rm -rf .xwin-cache /bin/xwin
 
 # add rust target for windows-msvc

@@ -33,6 +33,7 @@ xflags::xflags! {
             optional --env-access-key
             optional --src-dir src_dir: PathBuf
             optional --debug
+            optional --full
         }
 
         cmd download
@@ -42,9 +43,6 @@ xflags::xflags! {
             optional --base-url base_url: String
             optional --decompress
         }
-
-        cmd install-llvm-build-deps{}
-
 
         cmd upload
         required file: PathBuf
@@ -93,7 +91,6 @@ pub enum FerrisCiCmd {
     Build(Build),
     Archive(Archive),
     Download(Download),
-    InstallLlvmBuildDeps(InstallLlvmBuildDeps),
     Upload(Upload),
     InstallRust(InstallRust),
     InstallTool(InstallTool),
@@ -127,6 +124,7 @@ pub struct Archive {
     pub env_access_key: bool,
     pub src_dir: Option<PathBuf>,
     pub debug: bool,
+    pub full: bool,
 }
 
 #[derive(Debug)]
@@ -137,9 +135,6 @@ pub struct Download {
     pub base_url: Option<String>,
     pub decompress: bool,
 }
-
-#[derive(Debug)]
-pub struct InstallLlvmBuildDeps;
 
 #[derive(Debug)]
 pub struct Upload {

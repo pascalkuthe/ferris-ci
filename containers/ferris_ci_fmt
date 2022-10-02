@@ -1,9 +1,9 @@
 FROM ubuntu:22.04
 
 COPY ferris-ci /usr/bin/ferris-ci
-COPY containers/scripts/setup_tools.sh /scripts/
+COPY containers/scripts/setup_fmt.sh /scripts/
 RUN set -e ; \
-    /scripts/setup_tools.sh; \
+    /scripts/setup_fmt.sh; \
     rm -rf /scripts; 
 
 COPY containers/scripts/rustfmt-all.sh /usr/bin/rustfmt-all

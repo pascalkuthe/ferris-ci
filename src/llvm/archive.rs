@@ -7,12 +7,14 @@ use tar::{EntryType, Header};
 use xshell::{cmd, Shell};
 
 use super::BUILD_DIR;
+const LLD_LIBS: &[&str] = &["lldCommon", "lldCOFF", "lldELF", "lldMachO"];
 
 pub fn populate_archive(
     llvm_dir: &Option<PathBuf>,
     sh: &Shell,
     dst: &mut impl Write,
     pb: &ProgressBar,
+    full: bool,
 ) -> anyhow::Result<()> {
     let llvm_dir = llvm_dir
         .clone()
@@ -36,8 +38,7 @@ pub fn populate_archive(
     };
 
     add_executable("llvm-config")?;
-    #[cfg(not(windows))]
-    {
+    if full {
         add_executable("llvm-cov")?;
         add_executable("llvm-profdata")?;
         add_executable("llvm-rc")?;
@@ -78,14 +79,31 @@ pub fn populate_archive(
         tar_builder.append_file(path, &mut lib_file)?;
     }
 
-    pb.set_position(0);
-    pb.set_length(20 * 1024 * 1024);
-    pb.println("/LLVM/lib64/clang/");
-    tar_builder.append_dir_all("LLVM/lib64/clang", lib_dir.join("clang"))?;
+    for lib in LLD_LIBS {
+        let file = if cfg!(windows) {
+            format!("{lib}.lib")
+        } else {
+            format!("lib{lib}.a")
+        };
+        let path = format!("LLVM/lib64/{file}");
+        pb.println(&path);
+        let mut lib_file = File::open(lib_dir.join(&file))?;
+        pb.set_position(0);
+        pb.set_length(lib_file.metadata()?.len());
+        tar_builder.append_file(path, &mut lib_file)?;
+    }
+
+    #[cfg(not(windows))]
+    {
+        pb.set_position(0);
+        pb.set_length(20 * 1024 * 1024);
+        pb.println("LLVM/lib64/clang/");
+        tar_builder.append_dir_all("LLVM/lib64/clang", lib_dir.join("clang"))?;
+    }
 
     pb.set_position(0);
     pb.set_length(20 * 1024 * 1024);
-    pb.println("/LLVM/include");
+    pb.println("LLVM/include");
     let include_dir = llvm_dir.join("include");
     tar_builder.append_dir_all("LLVM/include", &include_dir)?;
     tar_builder.finish()?;
@@ -93,38 +111,33 @@ pub fn populate_archive(
 }
 
 fn find_llvm_libs(sh: &Shell, llvm_config: &Path) -> anyhow::Result<Vec<String>> {
-    let components = &["x86", "arm", "aarch64", "ipo", "bitreader", "bitwriter"];
+    let components = &[
+        "x86",
+        "arm",
+        "aarch64",
+        "ipo",
+        "bitreader",
+        "bitwriter",
+        "option",
+        "lto",
+        "debuginfopdb",
+        "windowsmanifest",
+        "libdriver", // "coverage",
+    ];
 
-    let output = cmd!(sh, "{llvm_config} --link-static --libs {components...}").read()?;
+    let output = cmd!(sh, "{llvm_config} --link-static --libnames {components...}").read()?;
     let mut libs = Vec::new();
     for lib in output.split_whitespace() {
-        let lib = if let Some(stripped) = lib.strip_prefix("-l") {
-            format!("lib{stripped}.a")
-        } else if let Some(stripped) = lib.strip_prefix('-') {
-            format!("lib{stripped}.a")
-        } else if Path::new(lib).exists() {
-            Path::new(lib)
-                .file_name()
-                .unwrap()
-                .to_str()
-                .unwrap()
-                .to_owned()
-        } else if lib.ends_with(".lib") {
-            lib.to_owned()
-        } else {
-            continue;
-        };
-
         // Don't need or want this library, but LLVM's CMake build system
         // doesn't provide a way to disable it, so filter it here even though we
         // may or may not have built it. We don't reference anything from this
         // library and it otherwise may just pull in extra dependencies on
         // libedit which we don't want
-        if lib == "libLLVMLineEditor" || !lib.contains("LLVM") {
+        if lib.contains("LLVMLineEditor") || !lib.contains("LLVM") {
             continue;
         }
 
-        libs.push(lib);
+        libs.push(lib.to_owned());
     }
 
     Ok(libs)
