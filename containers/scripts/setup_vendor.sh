@@ -5,7 +5,7 @@ set -e
 apt-get update
 apt-get install -y --no-install-recommends \
 		ca-certificates \
-		libssl3 \
+		openssh-client \
 		gzip \
 		tar  \
 		curl

@@ -10,3 +10,6 @@ COPY containers/scripts/setup_clippy.sh /scripts/
 RUN set -e ; \
     /scripts/setup_clippy.sh; \
     rm -rf /scripts; 
+    
+ENV PATH=/opt/rh/rh-python38/root/usr/local/bin:/opt/rh/rh-python38/root/usr/bin:$PATH \
+    LD_LIBRARY_PATH=/opt/rh/rh-python38/root/usr/lib64:/opt/rh/devtoolset-9/root/usr/lib:$LD_LIBRARY_PATH
