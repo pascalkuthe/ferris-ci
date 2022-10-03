@@ -8,7 +8,8 @@ apt-get install -y --no-install-recommends \
 		gzip \
 		openssh-client \
 		tar  \
-		curl
+		curl \
+		gcc
 rm -rf /var/lib/apt/lists/*
 
 
@@ -25,5 +26,9 @@ rm -rf /GIT
 # install cargo/rustc/clippy
 ferris-ci install-rust "${RUST_VERSION}"
 rustup component add clippy
+
+mkdir -p /opt/rh
+cd /opt/rh
+ferris-ci download --decompress rh-python38.tar.zst
 
 rm /usr/bin/ferris-ci
