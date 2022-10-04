@@ -9,8 +9,3 @@ mv WINE/lib64/* /usr/lib/
 mv WINE/share/* /usr/share/
 rm -rf WINE
 wine64 wineboot --init
-
-# Install rustfmt
-VERSION="1.5.1"
-URL="https://openva.fra1.cdn.digitaloceanspaces.com/rustfmt-${VERSION}.tar.gz"
-ferris-ci install-tool rustfmt $URL

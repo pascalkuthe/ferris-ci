@@ -9,7 +9,8 @@ apt-get install -y --no-install-recommends \
 		openssh-client \
 		tar  \
 		curl \
-		gcc
+		gcc \
+		libc-dev
 rm -rf /var/lib/apt/lists/*
 
 
@@ -22,6 +23,7 @@ chmod +x /GIT/libexec/git-core/*
 mkdir -p /usr/libexec/git-core/
 mv /GIT/libexec/git-core/* /usr/libexec/git-core/
 rm -rf /GIT
+ln -s /bin/ld /bin/ld.lld
 
 # install cargo/rustc/clippy
 ferris-ci install-rust "${RUST_VERSION}"
