@@ -23,5 +23,4 @@ rm -rf .xwin-cache /bin/xwin
 rustup target add x86_64-pc-windows-msvc
 
 # jerry rig llvm
-ln -s llvm-ar /usr/bin/llvm-dlltool
 rm /usr/bin/llvm-config # will be replaced with script

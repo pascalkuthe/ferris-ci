@@ -66,6 +66,7 @@ if [[ -n "${CROSS_TARGET:-}" ]]; then
 	ferris-ci download "llvm-${VERSION}-${CROSS_TARGET}-OFF.tar.zst" --decompress
     mv /LLVM/bin/llvm-config* /usr/bin/
 fi
+ln -s llvm-ar /usr/bin/llvm-dlltool
 mv /LLVM/lib64/* /usr/lib64/
 mv /LLVM/include/* /usr/include/
 rm -rf /LLVM
