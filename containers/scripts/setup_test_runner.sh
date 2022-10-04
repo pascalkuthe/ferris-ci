@@ -31,4 +31,9 @@ VERSION="0.9.35-dev"
 URL="https://openva.fra1.cdn.digitaloceanspaces.com/cargo-nextest-${VERSION}.tar.gz"
 ferris-ci install-tool cargo-nextest $URL
 
+# Install rustfmt
+VERSION="1.5.1"
+URL="https://openva.fra1.cdn.digitaloceanspaces.com/rustfmt-${VERSION}.tar.gz"
+ferris-ci install-tool rustfmt $URL
+
 rm /usr/bin/ferris-ci
