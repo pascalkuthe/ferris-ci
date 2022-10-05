@@ -53,3 +53,5 @@ However, forking and adjusting the project and adjusting it to your needs should
 
 The ferris_ci_win image can not be published to a public docker repository because it contains the msvc buildtools which do not allow redistribution. 
 I use a private [ghcr.io](ghcr.io) repository for my personal projects.
+
+foo
