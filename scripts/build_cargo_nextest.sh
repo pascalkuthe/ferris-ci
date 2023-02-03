@@ -8,8 +8,8 @@ if [[ ! -f ./ferris-ci ]]; then
 fi
 
 build_dir="cargo_nextest_src"
-devel="1"
-VERSION="0.9.35"
+devel="0"
+VERSION="0.9.44"
 if [[ $devel == "1" ]]; then
     BRANCH="main"
     URL=https://github.com/pascalkuthe/nextest.git
