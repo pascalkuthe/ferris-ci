@@ -8,14 +8,14 @@ if [[ ! -f ./ferris-ci ]]; then
 fi
 
 build_dir="xwin_src"
-devel="1"
-VERSION="0.2.27"
+devel="0"
+VERSION="0.2.10"
 if [[ $devel == "1" ]]; then
     BRANCH="main"
     URL=https://github.com/pascalkuthe/xwin.git
     VERSION="$VERSION-dev"
 else 
-    BRANCH="cargo-nextest-${VERSION}"
+    BRANCH="${VERSION}"
     URL=https://github.com/Jake-Shadle/xwin.git
 fi
 
