@@ -13,7 +13,7 @@ rm -rf WINE
 wine64 wineboot --init
 
 # install msvc crt
-VERSION=0.2.27-dev
+VERSION=0.2.10
 URL="https://openva.fra1.cdn.digitaloceanspaces.com/cargo-xwin-${VERSION}.tar.gz"
 ferris-ci install-tool xwin $URL
 xwin --accept-license --manifest-version=17 splat  --output /xwin
