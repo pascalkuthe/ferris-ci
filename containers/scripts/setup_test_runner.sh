@@ -27,7 +27,7 @@ URL="https://openva.fra1.cdn.digitaloceanspaces.com/circleci-junit-fix-0.2.2.tar
 ferris-ci install-tool circleci-junit-fix $URL
 
 # Install cargo-nextest 
-VERSION="0.9.35-dev"
+VERSION="0.9.44"
 URL="https://openva.fra1.cdn.digitaloceanspaces.com/cargo-nextest-${VERSION}.tar.gz"
 ferris-ci install-tool cargo-nextest $URL
 

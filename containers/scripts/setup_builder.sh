@@ -90,6 +90,6 @@ URL="https://github.com/mozilla/sccache/releases/download/v${VERSION}/sccache-v$
 ferris-ci install-tool sccache $URL
 
 # Install cargo-nextest 
-VERSION="0.9.35-dev"
+VERSION="0.9.44"
 URL="https://openva.fra1.cdn.digitaloceanspaces.com/cargo-nextest-${VERSION}.tar.gz"
 ferris-ci install-tool cargo-nextest $URL
