@@ -4,7 +4,7 @@ RUN yum install centos-release-scl epel-release -y
 RUN yum install -y  scl-utils scl-utils-build
 RUN yum install devtoolset-9 -y
 RUN yum install git-core ninja-build  libffi-devel cmake3 make automake flex bison libcurl-devel zlib-devel openssl-devel -y
-
+RUN ln -s /usr/bin/ld /usr/bin/ld.lld && ln -s /usr/bin/ld /usr/bin/lld 
 COPY ferris-ci /usr/bin/ferris-ci
 COPY containers/scripts/entrypoint_packge_builder.sh /usr/bin/entrypoint.sh
 ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]

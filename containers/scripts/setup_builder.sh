@@ -47,8 +47,8 @@ cd /
 ferris-ci download --decompress devtoolset-9.tar.zst
 
 # install llvm and use clang instead of gcc
-VERSION="14.0.6"
-ferris-ci download llvm-${VERSION}-x86_64-unknown-linux-gnu-OFF.tar.zst --decompress
+VERSION="15.0.7"
+ferris-ci download llvm-${VERSION}-x86_64-unknown-linux-gnu.tar.zst --decompress
 chmod +x /LLVM/bin/*
 mv /LLVM/bin/* /usr/bin/
 rm /usr/bin/llvm-profdata
@@ -63,7 +63,7 @@ ln -s /usr/bin/llvm-ar /usr/bin/ar
 
 if [[ -n "${CROSS_TARGET:-}" ]]; then
 	rm -rf /LLVM
-	ferris-ci download "llvm-${VERSION}-${CROSS_TARGET}-OFF.tar.zst" --decompress
+	ferris-ci download "llvm-${VERSION}-${CROSS_TARGET}.tar.zst" --decompress
     mv /LLVM/bin/llvm-config* /usr/bin/
 fi
 ln -s llvm-ar /usr/bin/llvm-dlltool
