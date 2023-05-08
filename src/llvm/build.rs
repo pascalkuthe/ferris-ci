@@ -57,6 +57,7 @@ impl Build {
                 -DCMAKE_BUILD_TYPE=Release
                 -DLLVM_ENABLE_LIBXML2=OFF
                 -DLLVM_ENABLE_ZLIB=OFF
+                -DLLVM_ENABLE_ZSTD=OFF
                 -DLLVM_ENABLE_ASSERTIONS={enable_assert}
                 -DLLVM_BUILD_TOOLS=OFF
                 -DLLVM_BUILD_EXAMPLES=OFF
@@ -138,14 +139,14 @@ impl Build {
             }
         }
 
-        fs::rename(
-            sh.current_dir()
-                .join(SRC_DIR)
-                .join("lld")
-                .join("include")
-                .join("lld"),
-            &dst.join("lld"),
-        )?;
+        // fs::rename(
+        //     sh.current_dir()
+        //         .join(SRC_DIR)
+        //         .join("lld")
+        //         .join("include")
+        //         .join("lld"),
+        //     &dst.join("lld"),
+        // )?;
 
         let src_dir = sh.current_dir().join(SRC_DIR);
         if src_dir.exists() {

@@ -7,7 +7,7 @@ use tar::{EntryType, Header};
 use xshell::{cmd, Shell};
 
 use super::BUILD_DIR;
-const LLD_LIBS: &[&str] = &["lldCommon", "lldCOFF", "lldELF", "lldMachO"];
+// const LLD_LIBS: &[&str] = &["lldCommon", "lldCOFF", "lldELF", "lldMachO"];
 
 pub fn populate_archive(
     llvm_dir: &Option<PathBuf>,
@@ -26,7 +26,7 @@ pub fn populate_archive(
     let mut add_executable = |name: &str| -> anyhow::Result<()> {
         #[cfg(windows)]
         let name = format!("{name}.exe");
-        let path = bin_dir.join(&*name);
+        let path = bin_dir.join(name);
         let mut file = File::open(path)?;
         let new_len = file.metadata()?.len();
         pb.set_position(0);
@@ -39,8 +39,8 @@ pub fn populate_archive(
 
     add_executable("llvm-config")?;
     if full {
-        add_executable("llvm-cov")?;
-        add_executable("llvm-profdata")?;
+        // add_executable("llvm-cov")?;
+        // add_executable("llvm-profdata")?;
         add_executable("llvm-rc")?;
         add_executable("llvm-ar")?;
         add_executable("lld")?;
@@ -79,19 +79,19 @@ pub fn populate_archive(
         tar_builder.append_file(path, &mut lib_file)?;
     }
 
-    for lib in LLD_LIBS {
-        let file = if cfg!(windows) {
-            format!("{lib}.lib")
-        } else {
-            format!("lib{lib}.a")
-        };
-        let path = format!("LLVM/lib64/{file}");
-        pb.println(&path);
-        let mut lib_file = File::open(lib_dir.join(&file))?;
-        pb.set_position(0);
-        pb.set_length(lib_file.metadata()?.len());
-        tar_builder.append_file(path, &mut lib_file)?;
-    }
+    // for lib in LLD_LIBS {
+    //     let file = if cfg!(windows) {
+    //         format!("{lib}.lib")
+    //     } else {
+    //         format!("lib{lib}.a")
+    //     };
+    //     let path = format!("LLVM/lib64/{file}");
+    //     pb.println(&path);
+    //     let mut lib_file = File::open(lib_dir.join(&file))?;
+    //     pb.set_position(0);
+    //     pb.set_length(lib_file.metadata()?.len());
+    //     tar_builder.append_file(path, &mut lib_file)?;
+    // }
 
     #[cfg(not(windows))]
     {
