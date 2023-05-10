@@ -1,4 +1,4 @@
-FROM alpine:3.16
+FROM ubuntu:22.04
 
 COPY ferris-ci /usr/bin/ferris-ci
 COPY containers/scripts/setup_dep.sh /scripts/

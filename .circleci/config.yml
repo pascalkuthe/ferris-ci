@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   build_bin:
     docker:
-      - image: cimg/rust:1.62.0
+      - image: cimg/rust:1.68.0
     resource_class: medium
     steps:
       - checkout # TODO shallow
@@ -27,39 +27,11 @@ jobs:
     parameters:
       image:
         type: string
-    docker:
-      - image: cimg/base:stable
-    resource_class: small
-    steps:
-      - checkout # TODO shallow
-      - attach_workspace:
-          at: .
-      - setup_remote_docker
-      - run: |
-          ssh remote-docker \<< EOF
-            sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
-            sudo systemctl restart docker
-          EOF
-      - run:
-          name: build
-          command: |
-            docker build --tag ghcr.io/pascalkuthe/<< parameters.image >> -f containers/<< parameters.image >> --squash .
-
-      - when:
-          condition:
-              equal: [ staging, << pipeline.git.branch >> ]
-          steps:
-            - run:
-                name: deploy
-                command: |
-                  echo $GITHUB_TOKEN | docker login ghcr.io -u pascalkuthe --password-stdin
-                  docker push ghcr.io/pascalkuthe/<< parameters.image >>
-  build_squashed_image:
-    parameters:
-      image:
+      base_image:
         type: string
+        default: "full"
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/python:3.11.3
     resource_class: small
     steps:
       - checkout # TODO shallow
@@ -74,12 +46,17 @@ jobs:
       - run:
           name: squash
           command: |
-            pip install docker==5.0.3
-            pip install docker-squash
-            docker-squash ghcr.io/pascalkuthe/<< parameters.image >>
+            pip install docker==6.1.1
+            pip install docker-squash==1.1.0
+            if [ << parameters.base_image >> == 'full' ]
+            then
+              docker-squash ghcr.io/pascalkuthe/<< parameters.image >>
+            else
+              docker-squash ghcr.io/pascalkuthe/<< parameters.image >> -f << parameters.base_image >>
+            fi
       - when:
           condition:
-              equal: [ staging, << pipeline.git.branch >> ]
+              equal: [ main, << pipeline.git.branch >> ]
           steps:
             - run:
                 name: deploy
@@ -89,18 +66,17 @@ jobs:
 
 workflows:
   ci:
-    when: 
-      or:
-        - equal: [ trying, << pipeline.git.branch >> ]
-        - equal: [ staging, << pipeline.git.branch >> ]
     jobs:
       - build_bin:
           name: build ferris_ci binary
-
+      - hold:
+          type: approval # presents manual approval button in the UI
       - build_image:
           requires:
             - build ferris_ci binary
+            - hold
           context: github
+          base_image: ubuntu:22.04
           matrix:
             parameters:
               image: 
@@ -111,9 +87,10 @@ workflows:
               - ferris_ci_test_runner_x86_64-pc-windows-msvc
               - ferris_ci_test_runner_x86_64-unknown-linux-gnu 
 
-      - build_squashed_image:
+      - build_image:
           requires:
             - build ferris_ci binary
+            - hold
           context: github
           matrix:
             parameters:
