@@ -2,7 +2,10 @@
 
 set -e
 
-apk add --no-cache ca-certificates
+
+apt-get update
+apt-get install -y --no-install-recommends ca-certificates
+rm -rf /var/lib/apt/lists/*
 
 # Install cargo-machete
 VERSION="0.3.1"

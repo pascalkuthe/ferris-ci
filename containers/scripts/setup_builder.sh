@@ -51,8 +51,6 @@ VERSION="15.0.7"
 ferris-ci download llvm-${VERSION}-x86_64-unknown-linux-gnu.tar.zst --decompress
 chmod +x /LLVM/bin/*
 mv /LLVM/bin/* /usr/bin/
-rm /usr/bin/llvm-profdata
-rm /usr/bin/llvm-cov
 mv /LLVM/lib64/clang /usr/lib64/clang
 ln -s /LLVM/lib64/clang /usr/lib/clang # fix broken build...
 ln -s /usr/bin/clang /usr/bin/cc
