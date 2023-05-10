@@ -48,7 +48,7 @@ ferris-ci download --decompress devtoolset-9.tar.zst
 
 # install llvm and use clang instead of gcc
 VERSION="15.0.7"
-ferris-ci download llvm-${VERSION}-x86_64-unknown-linux-gnu.tar.zst --decompress
+ferris-ci download llvm-${VERSION}-x86_64-unknown-linux-gnu-FULL.tar.zst --decompress
 chmod +x /LLVM/bin/*
 mv /LLVM/bin/* /usr/bin/
 mv /LLVM/lib64/clang /usr/lib64/clang
