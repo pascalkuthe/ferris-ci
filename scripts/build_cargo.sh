@@ -21,7 +21,7 @@ fi
 
 
 build_dir="cargo_src"
-VERSION="1.64.0"
+VERSION="1.65.0"
 BRANCH="rust-${VERSION}"
 URL=https://github.com/rust-lang/cargo.git
 

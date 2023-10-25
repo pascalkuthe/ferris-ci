@@ -130,7 +130,7 @@ pub fn archive_name_with_target(
         false => "OFF",
     };
     let target = target.unwrap_or(TARGET);
-    format!("{name}-{version}-{target}-{postfix}.tar.zst")
+    format!("{name}-{version}-{target}-{postfix}.tar.gz")
 }
 
 impl KnownProgram {

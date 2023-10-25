@@ -23,6 +23,6 @@ mv /GIT/libexec/git-core/* /usr/libexec/git-core/
 rm -rf /GIT
 
 # Install cargo
-VERSION="1.64.0"
+VERSION="1.65.0"
 URL="https://openva.fra1.cdn.digitaloceanspaces.com/cargo-${VERSION}.tar.gz"
 ferris-ci install-tool cargo $URL
