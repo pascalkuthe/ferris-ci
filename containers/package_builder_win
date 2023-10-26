@@ -11,15 +11,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         software-properties-common
 COPY ./llvm-snapshot.gpg.key /tmp/
 RUN set -ex; \
-    llvm_version=14; \
+    llvm_version=16; \
     apt-key add llvm-snapshot.gpg.key; \
     add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-$llvm_version main"; \
     apt-get update; \
     apt-get install -y --no-install-recommends clang-$llvm_version llvm-$llvm_version lld-$llvm_version
 
-ENV CC=clang-14 \
-    CXX=clang-14 \
-    AR=llvm-ar-14
+ENV CC=clang-16 \
+    CXX=clang-16 \
+    AR=llvm-ar-16
 
 COPY ferris-ci /usr/bin/ferris-ci
 RUN set -e \
@@ -31,7 +31,7 @@ RUN set -e \
 
 ENV CL_FLAGS="-Wno-unused-command-line-argument -fuse-ld=lld-link /imsvc/xwin/crt/include /imsvc/xwin/sdk/include/ucrt /imsvc/xwin/sdk/include/um /imsvc/xwin/sdk/include/shared /imsvc/usr/include" \
     CLD_FLAGS="/libpath:/xwin/crt/lib/x86_64 /libpath:/xwin/sdk/lib/um/x86_64 /libpath:/xwin/sdk/lib/ucrt/x86_64"
-RUN ln -s clang-14 /usr/bin/clang-cl
+RUN ln -s clang-16 /usr/bin/clang-cl
 COPY ferris-ci /usr/bin/ferris-ci
 COPY containers/scripts/entrypoint_packge_builder.sh /usr/bin/entrypoint.sh
 ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
