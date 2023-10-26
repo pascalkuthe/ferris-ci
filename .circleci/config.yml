@@ -51,8 +51,6 @@ jobs:
             if [ << parameters.base_image >> == 'full' ]
             then
               docker-squash ghcr.io/pascalkuthe/<< parameters.image >>
-            else
-              docker-squash ghcr.io/pascalkuthe/<< parameters.image >> -f << parameters.base_image >>
             fi
       - when:
           condition:
