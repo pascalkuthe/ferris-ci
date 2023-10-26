@@ -7,7 +7,8 @@ apt-get install -y --no-install-recommends \
 		ca-certificates \
 		gzip \
 		openssh-client \
-		tar 
+		tar \
+		binutils
 rm -rf /var/lib/apt/lists/*
 
 
