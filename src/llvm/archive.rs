@@ -25,7 +25,9 @@ pub fn populate_archive(
     tar_builder.append_dir("LLVM/bin", &bin_dir)?;
     let mut add_executable = |name: &str| -> anyhow::Result<()> {
         #[cfg(windows)]
-        let name = format!("{name}.exe");
+        let name_ = format!("{name}.exe");
+        #[cfg(windows)]
+        let name = &name_;
         let path = bin_dir.join(name);
         let mut file = File::open(path)?;
         let new_len = file.metadata()?.len();
@@ -39,8 +41,8 @@ pub fn populate_archive(
 
     add_executable("llvm-config")?;
     if full {
-        // add_executable("llvm-cov")?;
-        // add_executable("llvm-profdata")?;
+        add_executable("llvm-cov")?;
+        add_executable("llvm-profdata")?;
         add_executable("llvm-rc")?;
         add_executable("llvm-ar")?;
         add_executable("lld")?;

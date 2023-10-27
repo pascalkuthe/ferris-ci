@@ -59,9 +59,8 @@ impl Build {
                 -DLLVM_ENABLE_ZLIB=OFF
                 -DLLVM_ENABLE_ZSTD=OFF
                 -DLLVM_ENABLE_ASSERTIONS={enable_assert}
-                -DLLVM_BUILD_TOOLS=OFF
+                -DLLVM_BUILD_TOOLS=ON
                 -DLLVM_BUILD_EXAMPLES=OFF
-                -DLLVM_BUILD_TOOLS=OFF
                 -DLLVM_BUILD_RUNTIME=OFF
                 -DLLVM_ENABLE_BINDINGS=OFF
                 -DLLVM_INSTALL_UTILS=OFF
@@ -98,7 +97,13 @@ impl Build {
         };
 
         #[cfg(unix)]
-        let tools = ["llvm-cov", "llvm-profdata", "llvm-config"];
+        let tools = [
+            "llvm-cov",
+            "llvm-profdata",
+            "llvm-config",
+            "llvm-ar",
+            "llvm-rc",
+        ];
         #[cfg(windows)]
         let tools = ["llvm-config"];
 

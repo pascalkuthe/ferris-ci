@@ -19,7 +19,7 @@ if [[ ! -f ./ferris-ci ]]; then
 fi
 
 
-llvm_version="15.0.7"
+llvm_version="16.0.6"
 $docker build --tag package_builder:latest -f containers/package_builder .
-$docker run -v "$(pwd):/io:Z" package_builder:latest build llvm $llvm_version -j 8
-./ferris-ci archive llvm $llvm_version --upload
+$docker run -v "$(pwd):/io:Z" package_builder:latest build llvm $llvm_version -j 8 
+./ferris-ci archive llvm $llvm_version --upload --full
